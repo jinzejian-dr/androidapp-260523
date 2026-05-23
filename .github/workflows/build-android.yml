@@ -11,8 +11,8 @@ jobs:
     - uses: android-actions/setup-android@v3
     - name: Setup Android SDK for buildozer
       run: |
-        # Install required SDK components with Java 8
-        export JAVA_HOME=/usr/lib/jvm/temurin-8-jdk-amd64
+        # Install required SDK components with Java 17
+        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
         sdkmanager "platform-tools" "build-tools;33.0.0" "platforms;android-33" "ndk;25.2.9519653"
         # Create buildozer SDK directory structure
         mkdir -p ~/.buildozer/android/platform
@@ -20,6 +20,14 @@ jobs:
         # Create build-tools directory structure that buildozer expects
         mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
         ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0
+        # Create a wrapper script for sdkmanager that uses Java 8
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        cat > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager << 'EOF'
+#!/bin/bash
+export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+exec $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "$@"
+EOF
+        chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
     - run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-8-jdk openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev
