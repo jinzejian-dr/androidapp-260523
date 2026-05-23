@@ -11,28 +11,24 @@ jobs:
     - uses: android-actions/setup-android@v3
     - name: Setup Android SDK for buildozer
       run: |
-        # Install required SDK components
+        # Install required SDK components with Java 8
+        export JAVA_HOME=/usr/lib/jvm/temurin-8-jdk-amd64
         sdkmanager "platform-tools" "build-tools;33.0.0" "platforms;android-33" "ndk;25.2.9519653"
         # Create buildozer SDK directory structure
         mkdir -p ~/.buildozer/android/platform
-        # Create symlinks for SDK
         ln -sf $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
-        # Find and link aidl
-        AIDL_PATH=$(find $ANDROID_SDK_ROOT -name "aidl" -type f 2>/dev/null | head -1)
-        echo "Found aidl at: $AIDL_PATH"
         # Create build-tools directory structure that buildozer expects
         mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
         ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0
-        ls -la ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0/
     - run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev
+        sudo apt-get install -y git zip unzip openjdk-8-jdk openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev
     - run: pip install buildozer cython
     - name: Build APK
       run: buildozer android debug
       env:
         BUILDOZER_WARN_ON_ROOT: 0
-        JAVA_HOME: /usr/lib/jvm/temurin-11-jdk-amd64
+        JAVA_HOME: /usr/lib/jvm/temurin-8-jdk-amd64
         ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     - uses: actions/upload-artifact@v4
       with:
