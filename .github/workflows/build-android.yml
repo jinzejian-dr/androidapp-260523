@@ -13,7 +13,6 @@ jobs:
       run: |
         mkdir -p ~/.buildozer/android/platform
         ln -sf $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
-        ls -la ~/.buildozer/android/platform/android-sdk/build-tools/
     - run: |
         sudo apt-get update
         sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev
@@ -21,6 +20,7 @@ jobs:
     - run: buildozer android debug
       env:
         BUILDOZER_WARN_ON_ROOT: 0
+        JAVA_HOME: /usr/lib/jvm/temurin-11-jdk-amd64
     - uses: actions/upload-artifact@v4
       with:
         name: surgery-cam-apk
