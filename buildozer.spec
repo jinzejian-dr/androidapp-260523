@@ -1,4 +1,5 @@
 [app]
+
 title = 术野摄像头简化版
 package.name = simplesurgerycam
 package.domain = com.surgerycam
@@ -15,7 +16,7 @@ android.ndk = 23b
 android.archs = arm64-v8a
 android.release_artifact = apk
 android.allow_backup = False
-source.exclude_patterns = *.pyc,*.pyo,__pycache__,.git,*.m d,README*
+source.exclude_patterns = *.pyc,*.pyo,__pycache__,.git,*.md,README*
 android.enable_androidx = True
 
 [buildozer]
