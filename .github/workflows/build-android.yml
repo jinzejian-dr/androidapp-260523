@@ -20,13 +20,11 @@ jobs:
         # Create build-tools directory structure that buildozer expects
         mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
         ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0
-        # Create a wrapper script for sdkmanager that uses Java 8
+        # Create a wrapper script for sdkmanager that uses Java 17
         mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        cat > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager << 'EOF'
-#!/bin/bash
-export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-exec $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "$@"
-EOF
+        echo '#!/bin/bash' > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        echo 'export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        echo 'exec $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "$@"' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
         chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
     - run: |
         sudo apt-get update
