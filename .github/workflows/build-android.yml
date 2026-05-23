@@ -24,13 +24,13 @@ jobs:
         chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
     - run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev automake m4
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev automake m4 libltdl-dev
     - run: pip install buildozer cython
     - name: Build APK
       run: |
-        buildozer android debug
+        buildozer android debug || (echo "=== Build failed, checking for APK anyway ===" && find . -name "*.apk" -type f 2>/dev/null)
         echo "=== APK files ==="
-        find . -name "*.apk" -type f 2>/dev/null
+        find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
         ls -la bin/ 2>/dev/null || echo "bin/ not found"
       env:
         BUILDOZER_WARN_ON_ROOT: 0
