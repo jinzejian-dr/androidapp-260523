@@ -20,7 +20,7 @@ jobs:
         # Create build-tools directory structure that buildozer expects
         mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
         ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0
-        # Create a wrapper script for sdkmanager that uses Java 17
+        # Create a wrapper script for sdkmanager
         mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
         echo '#!/bin/bash' > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
         echo 'export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
@@ -28,13 +28,13 @@ jobs:
         chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
     - run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-8-jdk openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev
+        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev cmake libffi-dev libssl-dev
     - run: pip install buildozer cython
     - name: Build APK
       run: buildozer android debug
       env:
         BUILDOZER_WARN_ON_ROOT: 0
-        JAVA_HOME: /usr/lib/jvm/temurin-8-jdk-amd64
+        JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
         ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     - uses: actions/upload-artifact@v4
       with:
