@@ -1,5 +1,4 @@
 [app]
-
 title = 术野摄像头简化版
 package.name = simplesurgerycam
 package.domain = com.surgerycam
@@ -10,9 +9,10 @@ requirements = python3,kivy,ffpyplayer,opencv-python
 orientation = landscape
 fullscreen = 0
 android.permissions = INTERNET
-android.api = 30
+android.api = 33
 android.minapi = 21
-android.ndk = 23b
+android.sdk = 33
+android.ndk = 25b
 android.archs = arm64-v8a
 android.release_artifact = apk
 android.allow_backup = False
