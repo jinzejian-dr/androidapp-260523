@@ -32,20 +32,40 @@ jobs:
       run: pip install buildozer cython
     - name: Build APK
       run: |
-        buildozer android debug || (echo "=== Build failed, checking for APK anyway ===" && find . -name "*.apk" -type f 2>/dev/null)
-        echo "=== APK files ==="
-        find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
+        buildozer android debug
+        echo "=== Build completed ==="
+        echo "=== Check bin/ directory ==="
         ls -la bin/ 2>/dev/null || echo "bin/ not found"
+        echo "=== Check .buildozer/ directory ==="
+        find .buildozer -name "*.apk" -type f 2>/dev/null | head -20 || echo "No APK in .buildozer"
+        echo "=== Check all APK files ==="
+        find . -name "*.apk" -type f 2>/dev/null || echo "No APK found anywhere"
+        echo "=== Check dists directory ==="
+        ls -la .buildozer/android/platform/build-arm64-v8a/dists/ 2>/dev/null || echo "dists not found"
       env:
         BUILDOZER_WARN_ON_ROOT: 0
         JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
         ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+    - name: Find and copy APK
+      run: |
+        echo "=== Searching for APK ==="
+        APK_PATH=$(find .buildozer -name "*.apk" -type f 2>/dev/null | head -1)
+        if [ -n "$APK_PATH" ]; then
+          echo "Found APK: $APK_PATH"
+          mkdir -p bin
+          cp "$APK_PATH" bin/
+          ls -la bin/
+        else
+          echo "No APK found in .buildozer"
+          # Check alternative locations
+          find . -name "*.apk" -type f 2>/dev/null
+        fi
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: surgery-cam-apk-v1.1
         path: |
           bin/*.apk
-          .buildozer/android/app/build/outputs/apk/debug/*.apk
-          .buildozer/android/platform/build-arm64-v8a/dists/simplesurgerycam/build/outputs/apk/debug/*.apk
+          .buildozer/android/platform/build-*/dists/*/build/outputs/apk/debug/*.apk
+          .buildozer/android/platform/build-*/dists/*/build/outputs/apk/release/*.apk
         if-no-files-found: warn
