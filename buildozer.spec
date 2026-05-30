@@ -21,9 +21,9 @@ android.minapi = 21
 android.ndk = 25b
 android.archs = arm64-v8a
 
-# 允许 buildozer 自动下载 SDK
-android.sdk_path = 
-android.ndk_path = 
+# SDK 路径 (由 GitHub Actions 设置)
+android.sdk_path = ~/.buildozer/android/platform/android-sdk
+android.ndk_path = ~/.buildozer/android/platform/android-ndk-r25b
 
 # 其他配置
 android.release_artifact = apk
