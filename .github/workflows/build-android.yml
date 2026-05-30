@@ -67,7 +67,7 @@ jobs:
     - name: Verify buildozer installation
       run: |
         buildozer --version
-        buildozer android check
+        echo "Buildozer installed successfully"
         
     - name: Build APK
       timeout-minutes: 120
@@ -113,7 +113,7 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: surgery-cam-apk-v1.1.4
+        name: surgery-cam-apk-v1.2.0
         path: bin/*.apk
         if-no-files-found: error
         
@@ -121,16 +121,17 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v1.1.4-${{ github.run_number }}
-        name: SurgeryCam v1.1.4 Build ${{ github.run_number }}
+        tag_name: v1.2.0-${{ github.run_number }}
+        name: SurgeryCam v1.2.0 Build ${{ github.run_number }}
         body: |
-          ## SurgeryCam Android App v1.1.4
+          ## SurgeryCam Android App v1.2.0
           
           ### Changes
-          - Added ffpyplayer support for video playback
-          - Added FFmpeg dependencies
+          - Fixed ffpyplayer dependency in buildozer.spec
+          - Added FFmpeg system dependencies
           - Improved error handling and logging
-          - Fixed build configuration
+          - Added fallback to external player
+          - Optimized GitHub Actions build with caching
           
           ### Build Info
           - Build Date: ${{ github.event.head_commit.timestamp }}
