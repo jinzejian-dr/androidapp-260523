@@ -48,13 +48,57 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildozer-
           
+    - name: Pre-install Android SDK
+      run: |
+        # Create buildozer directories
+        mkdir -p ~/.buildozer/android/platform
+        
+        # Download Android SDK command line tools
+        cd ~/.buildozer/android/platform
+        if [ ! -d "android-sdk" ]; then
+          echo "Downloading Android SDK..."
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools-linux-9477386_latest.zip
+          mkdir -p android-sdk/cmdline-tools/latest
+          mv cmdline-tools/* android-sdk/cmdline-tools/latest/ 2>/dev/null || true
+          rm -rf cmdline-tools
+          rm commandlinetools-linux-9477386_latest.zip
+        fi
+        
+        # Set up environment
+        export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+        
+        # Accept all licenses
+        echo "Accepting Android SDK licenses..."
+        yes | sdkmanager --licenses || true
+        
+        # Install required packages
+        sdkmanager "platform-tools" "build-tools;33.0.0" "platforms;android-33" "ndk;25.2.9519653" || true
+        
+        # Create licenses directory if not exists
+        mkdir -p $ANDROID_SDK_ROOT/licenses
+        
+        # Add license files
+        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+        echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
+        
+        echo "SDK setup completed"
+        
     - name: Build APK
       timeout-minutes: 180
       run: |
         echo "=== Starting Build ==="
-        echo "Current directory: $(pwd)"
         
-        # Run buildozer (it will auto-download SDK if needed)
+        # Set environment
+        export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
+        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools
+        
+        # Create local.properties for buildozer
+        mkdir -p ~/.buildozer/android/platform
+        
+        # Run buildozer
         buildozer android debug 2>&1 | tee build.log || true
         
         echo "=== Build completed ==="
