@@ -20,33 +20,6 @@ jobs:
       with:
         python-version: '3.10'
         
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v3
-      
-    - name: Setup Android SDK for buildozer
-      run: |
-        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
-        sdkmanager "platform-tools" "build-tools;33.0.0" "platforms;android-33" "ndk;25.2.9519653"
-        mkdir -p ~/.buildozer/android/platform
-        ln -sf $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
-        mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
-        ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0
-        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        echo '#!/bin/bash' > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        echo 'export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        echo 'exec $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "$@"' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        
-    - name: Cache buildozer dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.buildozer
-          ~/.cache/pip
-        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-        restore-keys: |
-          ${{ runner.os }}-buildozer-
-          
     - name: Install system dependencies
       run: |
         sudo apt-get update
@@ -57,7 +30,8 @@ jobs:
           cmake libffi-dev libssl-dev \
           automake m4 libltdl-dev \
           ffmpeg libavcodec-dev libavformat-dev libavdevice-dev \
-          libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+          libavutil-dev libswscale-dev libswresample-dev libavfilter-dev \
+          libltdl-dev
           
     - name: Install Python dependencies
       run: |
@@ -69,11 +43,41 @@ jobs:
         buildozer --version
         echo "Buildozer installed successfully"
         
+    - name: Cache buildozer dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.buildozer
+          ~/.cache/pip
+        key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          ${{ runner.os }}-buildozer-
+          
+    - name: Initialize buildozer (if needed)
+      run: |
+        if [ ! -d ~/.buildozer/android/platform ]; then
+          echo "Initializing buildozer..."
+          buildozer android debug 2>&1 | head -100 || true
+        fi
+        
     - name: Build APK
-      timeout-minutes: 120
+      timeout-minutes: 180
       run: |
         echo "=== Starting Build ==="
-        buildozer android debug 2>&1 | tee build.log
+        echo "Current directory: $(pwd)"
+        echo "Buildozer spec:"
+        cat buildozer.spec | head -20
+        
+        # Run buildozer with error handling
+        buildozer android debug 2>&1 | tee build.log || BUILD_FAILED=1
+        
+        if [ "$BUILD_FAILED" = "1" ]; then
+          echo "=== BUILD FAILED ==="
+          echo "Last 100 lines of build log:"
+          tail -100 build.log
+          exit 1
+        fi
+        
         echo "=== Build completed ==="
         echo "=== Check bin/ directory ==="
         ls -la bin/ 2>/dev/null || echo "bin/ not found"
@@ -83,13 +87,11 @@ jobs:
         find . -name "*.apk" -type f 2>/dev/null || echo "No APK found anywhere"
       env:
         BUILDOZER_WARN_ON_ROOT: 0
-        JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
-        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         
     - name: Find and copy APK
       run: |
         echo "=== Searching for APK ==="
-        APK_PATH=$(find .buildozer -name "*.apk" -type f 2>/dev/null | head -1)
+        APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -1)
         if [ -n "$APK_PATH" ]; then
           echo "Found APK: $APK_PATH"
           mkdir -p bin
@@ -97,8 +99,9 @@ jobs:
           ls -la bin/
           echo "APK_SIZE=$(stat -c%s "$APK_PATH")" >> $GITHUB_ENV
         else
-          echo "No APK found in .buildozer"
-          find . -name "*.apk" -type f 2>/dev/null
+          echo "No APK found"
+          echo "=== Build log tail ==="
+          tail -50 build.log
           exit 1
         fi
         
@@ -111,6 +114,7 @@ jobs:
         if-no-files-found: ignore
         
     - name: Upload APK
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: surgery-cam-apk-v1.2.0
@@ -118,7 +122,7 @@ jobs:
         if-no-files-found: error
         
     - name: Create Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v1.2.0-${{ github.run_number }}
