@@ -67,7 +67,6 @@ jobs:
     - name: Verify buildozer installation
       run: |
         buildozer --version
-        buildozer android check
         
     - name: Build APK
       timeout-minutes: 120
