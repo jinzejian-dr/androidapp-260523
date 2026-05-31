@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-术野摄像头接收端 - 简化版 Android App
-版本: 1.1.4
+术野摄像头接收端 - Android App v1.3.1
+版本: 1.3.1
 日期: 2026-05-31
-功能: 设备发现、RTSP地址管理、视频播放
-说明: 使用 ffpyplayer 进行视频播放
+功能: 设备发现、RTSP地址管理、外部播放器调用
+说明: 使用外部播放器(VLC/MX Player)播放RTSP视频流
 """
 
 import threading
@@ -27,116 +27,6 @@ from kivy.utils import platform
 import logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-# 尝试导入 ffpyplayer
-try:
-    from ffpyplayer.player import MediaPlayer
-    FFPYPLAYER_AVAILABLE = True
-    logger.info("ffpyplayer imported successfully")
-except ImportError as e:
-    FFPYPLAYER_AVAILABLE = False
-    logger.error(f"ffpyplayer import failed: {e}")
-
-
-class VideoWidget(BoxLayout):
-    """视频显示组件"""
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.orientation = 'vertical'
-        self.player = None
-        self.is_playing = False
-        self.texture = None
-        
-        # 视频显示区域
-        from kivy.uix.image import Image
-        self.video_image = Image(
-            allow_stretch=True,
-            keep_ratio=True
-        )
-        self.add_widget(self.video_image)
-        
-        # 状态标签
-        self.status_label = Label(
-            text='Video Ready',
-            size_hint_y=None,
-            height=20,
-            font_size='10sp'
-        )
-        self.add_widget(self.status_label)
-        
-    def start_playback(self, url):
-        """开始播放视频"""
-        if not FFPYPLAYER_AVAILABLE:
-            self.status_label.text = 'Error: ffpyplayer not available'
-            logger.error("ffpyplayer not available, cannot start playback")
-            return False
-            
-        try:
-            # 停止之前的播放
-            self.stop_playback()
-            
-            logger.info(f"Starting playback: {url}")
-            self.status_label.text = 'Connecting...'
-            
-            # 配置 ffpyplayer - 低延迟模式
-            ffopts = {
-                'rtsp_transport': 'tcp',
-                'fflags': 'nobuffer',
-                'flags': 'low_delay',
-                'probesize': '32',
-                'analyzeduration': '0',
-                'sync': 'video',
-            }
-            
-            self.player = MediaPlayer(url, ffopts=ffopts)
-            self.is_playing = True
-            
-            # 开始更新视频帧
-            Clock.schedule_interval(self.update_frame, 1.0/30.0)  # 30fps
-            
-            self.status_label.text = 'Playing'
-            logger.info("Playback started successfully")
-            return True
-            
-        except Exception as e:
-            self.status_label.text = f'Error: {str(e)[:30]}'
-            logger.error(f"Failed to start playback: {e}")
-            return False
-    
-    def stop_playback(self):
-        """停止播放"""
-        logger.info("Stopping playback")
-        self.is_playing = False
-        Clock.unschedule(self.update_frame)
-        
-        if self.player:
-            try:
-                self.player.close_player()
-            except Exception as e:
-                logger.error(f"Error closing player: {e}")
-            self.player = None
-            
-        self.status_label.text = 'Stopped'
-        self.video_image.texture = None
-        
-    def update_frame(self, dt):
-        """更新视频帧"""
-        if not self.is_playing or not self.player:
-            return False
-            
-        try:
-            frame, val = self.player.get_frame()
-            if frame is not None:
-                # 获取帧数据
-                img, t = frame
-                if img is not None:
-                    # 更新纹理
-                    self.video_image.texture = img
-                    self.video_image.canvas.ask_update()
-        except Exception as e:
-            logger.error(f"Frame update error: {e}")
-            
-        return self.is_playing
 
 
 class MainLayout(BoxLayout):
@@ -163,27 +53,25 @@ class MainLayout(BoxLayout):
         """创建用户界面"""
         # 标题
         title = Label(
-            text=f'SurgeryCam v1.3.0 (ffpyplayer: {"OK" if FFPYPLAYER_AVAILABLE else "N/A"})',
+            text='SurgeryCam v1.3.1 (External Player)',
             size_hint_y=None,
             height=30,
             font_size='14sp'
         )
         self.add_widget(title)
         
-        # 视频播放区域 (如果 ffpyplayer 可用)
-        if FFPYPLAYER_AVAILABLE:
-            self.video_widget = VideoWidget(size_hint_y=0.4)
-            self.add_widget(self.video_widget)
-        else:
-            # 显示警告
-            warning = Label(
-                text='WARNING: Video playback not available\nUsing external player',
-                size_hint_y=0.4,
-                color=(1, 0.5, 0, 1),
-                font_size='12sp'
-            )
-            self.add_widget(warning)
-            self.video_widget = None
+        # 提示信息区域
+        info_box = BoxLayout(orientation='vertical', size_hint_y=0.3, padding=10)
+        info_box.add_widget(Label(
+            text='RTSP Video Player',
+            font_size='16sp',
+            bold=True
+        ))
+        info_box.add_widget(Label(
+            text='Click PLAY to open external player\n(VLC / MX Player)',
+            font_size='12sp'
+        ))
+        self.add_widget(info_box)
         
         # RTSP地址输入
         url_box = BoxLayout(size_hint_y=None, height=35, spacing=3)
@@ -201,7 +89,7 @@ class MainLayout(BoxLayout):
         btn_box = BoxLayout(size_hint_y=None, height=40, spacing=5)
         
         self.copy_btn = Button(
-            text='COPY',
+            text='COPY URL',
             font_size='11sp',
             background_color=(0.2, 0.6, 0.8, 1)
         )
@@ -209,42 +97,33 @@ class MainLayout(BoxLayout):
         btn_box.add_widget(self.copy_btn)
         
         self.scan_btn = Button(
-            text='SCAN',
+            text='SCAN DEVICES',
             font_size='11sp',
             background_color=(0.2, 0.7, 0.3, 1)
         )
         self.scan_btn.bind(on_press=self.on_scan)
         btn_box.add_widget(self.scan_btn)
         
-        # 播放按钮 - 根据 ffpyplayer 可用性显示不同功能
-        if FFPYPLAYER_AVAILABLE:
-            self.play_btn = Button(
-                text='PLAY',
-                font_size='11sp',
-                background_color=(0.8, 0.4, 0.2, 1)
-            )
-            self.play_btn.bind(on_press=self.toggle_playback)
-        else:
-            self.play_btn = Button(
-                text='OPEN',
-                font_size='11sp',
-                background_color=(0.8, 0.6, 0.2, 1)
-            )
-            self.play_btn.bind(on_press=self.open_external_player)
+        self.play_btn = Button(
+            text='PLAY VIDEO',
+            font_size='11sp',
+            background_color=(0.8, 0.4, 0.2, 1)
+        )
+        self.play_btn.bind(on_press=self.open_external_player)
         btn_box.add_widget(self.play_btn)
         
         self.add_widget(btn_box)
         
         # 设备列表区域
         self.add_widget(Label(
-            text='Devices:',
+            text='Discovered Devices:',
             size_hint_y=None,
             height=20,
             font_size='12sp'
         ))
         
         # 设备列表滚动区域
-        scroll = ScrollView(size_hint_y=0.25)
+        scroll = ScrollView(size_hint_y=0.3)
         self.devices_layout = GridLayout(cols=1, spacing=3, size_hint_y=None)
         self.devices_layout.bind(minimum_height=self.devices_layout.setter('height'))
         scroll.add_widget(self.devices_layout)
@@ -252,7 +131,7 @@ class MainLayout(BoxLayout):
         
         # 状态显示
         self.status_label = Label(
-            text='Ready',
+            text='Ready - Waiting for devices...',
             size_hint_y=None,
             height=25,
             font_size='11sp'
@@ -260,22 +139,6 @@ class MainLayout(BoxLayout):
         self.add_widget(self.status_label)
         
         logger.info("UI created successfully")
-        
-    def toggle_playback(self, instance):
-        """切换播放/停止"""
-        if not self.video_widget:
-            self.open_external_player(instance)
-            return
-            
-        if self.video_widget.is_playing:
-            self.video_widget.stop_playback()
-            self.play_btn.text = 'PLAY'
-            self.play_btn.background_color = (0.8, 0.4, 0.2, 1)
-        else:
-            url = self.url_input.text.strip()
-            if self.video_widget.start_playback(url):
-                self.play_btn.text = 'STOP'
-                self.play_btn.background_color = (0.6, 0.2, 0.2, 1)
         
     def copy_url(self, instance):
         """复制URL到剪贴板"""
@@ -291,7 +154,7 @@ class MainLayout(BoxLayout):
                 clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE)
                 clip = ClipData.newPlainText("RTSP URL", url)
                 clipboard.setPrimaryClip(clip)
-                self.status_label.text = 'URL copied!'
+                self.status_label.text = 'URL copied to clipboard!'
                 logger.info("URL copied to clipboard")
             except Exception as e:
                 logger.error(f"Copy failed: {e}")
@@ -302,7 +165,7 @@ class MainLayout(BoxLayout):
     def on_scan(self, instance):
         """扫描设备"""
         logger.info("Starting device scan")
-        self.status_label.text = 'Scanning...'
+        self.status_label.text = 'Scanning for devices...'
         self.devices_layout.clear_widgets()
         self.devices = []
         threading.Thread(target=self.discover_devices, daemon=True).start()
@@ -322,7 +185,7 @@ class MainLayout(BoxLayout):
                 intent = Intent(Intent.ACTION_VIEW)
                 intent.setDataAndType(Uri.parse(url), "video/*")
                 PythonActivity.mActivity.startActivity(intent)
-                self.status_label.text = 'Opening player...'
+                self.status_label.text = 'Opening external player...'
             except Exception as e:
                 logger.error(f"Open player failed: {e}")
                 self.status_label.text = f'Error: {str(e)[:30]}'
@@ -437,11 +300,11 @@ class MainLayout(BoxLayout):
 class SimpleSurgeryCamApp(App):
     """Kivy应用类"""
     def build(self):
-        logger.info("Building app...")
+        logger.info("Building SurgeryCam App v1.3.1...")
         Window.clearcolor = (0.1, 0.1, 0.15, 1)
         return MainLayout()
 
 
 if __name__ == '__main__':
-    logger.info("Starting SurgeryCam App v1.3.0")
+    logger.info("Starting SurgeryCam App v1.3.1")
     SimpleSurgeryCamApp().run()
