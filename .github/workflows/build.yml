@@ -29,6 +29,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install buildozer cython
     
+    - name: Clear Buildozer cache
+      run: |
+        rm -rf ~/.buildozer/android/platform/android-sdk
+        rm -rf .buildozer
+    
     - name: Setup Android SDK (Fix for sdkmanager path)
       run: |
         # Create SDK directory structure
