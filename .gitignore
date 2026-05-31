@@ -1,0 +1,9 @@
+.buildozer/
+bin/
+*.apk
+*.pyc
+__pycache__/
+*.spec.bak
+.git/
+logs_*/
+*.zip
