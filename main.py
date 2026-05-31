@@ -163,7 +163,7 @@ class MainLayout(BoxLayout):
         """创建用户界面"""
         # 标题
         title = Label(
-            text=f'SurgeryCam v1.1.4 (ffpyplayer: {"OK" if FFPYPLAYER_AVAILABLE else "N/A"})',
+            text=f'SurgeryCam v1.2.0 (External Player)',
             size_hint_y=None,
             height=30,
             font_size='14sp'
