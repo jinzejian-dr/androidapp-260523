@@ -4,10 +4,10 @@ package.name = simplesurgerycam
 package.domain = com.surgerycam
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
-version = 1.3.0
+version = 1.3.1
 
-# 添加 ffpyplayer 用于视频播放
-requirements = python3,kivy,pyjnius,ffpyplayer,setuptools
+# 使用外部播放器，移除 ffpyplayer 以简化构建
+requirements = python3,kivy,pyjnius,setuptools
 
 orientation = portrait
 fullscreen = 0
