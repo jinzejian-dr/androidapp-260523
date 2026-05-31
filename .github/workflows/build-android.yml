@@ -28,7 +28,8 @@ jobs:
           autoconf libtool pkg-config \
           zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev \
           cmake libffi-dev libssl-dev \
-          automake m4 libltdl-dev
+          automake m4 libltdl-dev \
+          aidl
           
     - name: Install Python dependencies
       run: |
@@ -45,6 +46,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildozer-
           
+    - name: Setup Android SDK
+      run: |
+        mkdir -p ~/.buildozer/android/platform
+        
     - name: Build APK
       timeout-minutes: 60
       run: |
@@ -53,6 +58,7 @@ jobs:
         echo "=== Build completed ==="
       env:
         BUILDOZER_WARN_ON_ROOT: 0
+        ANDROIDSDK: ~/.buildozer/android/platform/android-sdk
         
     - name: Check for APK
       run: |
