@@ -112,7 +112,7 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: surgery-cam-apk-v1.3.0
+        name: surgery-cam-apk-v1.3.1
         path: bin/*.apk
         if-no-files-found: error
         
@@ -120,8 +120,8 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v1.3.0-${{ github.run_number }}
-        name: SurgeryCam v1.3.0 Build ${{ github.run_number }}
+        tag_name: v1.3.1-${{ github.run_number }}
+        name: SurgeryCam v1.3.1 Build ${{ github.run_number }}
         body: |
           ## SurgeryCam Android App v1.3.0
           
