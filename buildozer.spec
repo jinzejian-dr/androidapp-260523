@@ -6,8 +6,8 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 1.2.0
 
-# 添加 ffpyplayer 用于视频播放
-requirements = python3,kivy,pyjnius,ffpyplayer,setuptools
+# 移除 ffpyplayer 以简化构建，使用外部播放器
+requirements = python3,kivy,pyjnius,setuptools
 
 orientation = portrait
 fullscreen = 0
