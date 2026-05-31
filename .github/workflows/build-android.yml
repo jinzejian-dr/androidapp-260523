@@ -20,23 +20,22 @@ jobs:
       with:
         python-version: '3.10'
         
-    - name: Install system dependencies
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Setup Android SDK for buildozer
       run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          git zip unzip openjdk-17-jdk python3-pip \
-          autoconf libtool pkg-config \
-          zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev \
-          cmake libffi-dev libssl-dev \
-          automake m4 libltdl-dev \
-          ffmpeg libavcodec-dev libavformat-dev libavdevice-dev \
-          libavutil-dev libswscale-dev libswresample-dev libavfilter-dev \
-          libltdl-dev
-          
-    - name: Install Python dependencies
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython
+        export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64
+        sdkmanager "platform-tools" "build-tools;33.0.0" "platforms;android-33" "ndk;25.2.9519653"
+        mkdir -p ~/.buildozer/android/platform
+        ln -sf $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
+        mkdir -p ~/.buildozer/android/platform/android-sdk/build-tools
+        ln -sf $ANDROID_SDK_ROOT/build-tools/33.0.0 ~/.buildozer/android/platform/android-sdk/build-tools/33.0.0
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        echo '#!/bin/bash' > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        echo 'export JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        echo 'exec $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "$@"' >> ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
         
     - name: Cache buildozer dependencies
       uses: actions/cache@v4
@@ -48,86 +47,58 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildozer-
           
-    - name: Setup Android SDK
+    - name: Install system dependencies
       run: |
-        # Create directories
-        mkdir -p ~/.buildozer/android/platform
+        sudo apt-get update
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk python3-pip \
+          autoconf libtool pkg-config \
+          zlib1g-dev libncurses5-dev libncursesw5-dev liblzma-dev \
+          cmake libffi-dev libssl-dev \
+          automake m4 libltdl-dev \
+          ffmpeg libavcodec-dev libavformat-dev libavdevice-dev \
+          libavutil-dev libswscale-dev libswresample-dev libavfilter-dev
+          
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install buildozer cython
         
-        # Download and setup Android SDK
-        cd ~/.buildozer/android/platform
-        if [ ! -d "android-sdk" ]; then
-          echo "Downloading Android SDK..."
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools-linux-9477386_latest.zip
-          mkdir -p android-sdk/cmdline-tools/latest
-          mv cmdline-tools/* android-sdk/cmdline-tools/latest/ 2>/dev/null || true
-          rm -rf cmdline-tools
-          rm commandlinetools-linux-9477386_latest.zip
-        fi
-        
-        # Create old tools directory structure that buildozer expects
-        mkdir -p android-sdk/tools/bin
-        ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager android-sdk/tools/bin/sdkmanager
-        
-        # Set up environment
-        export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/tools/bin
-        
-        # Accept all licenses
-        echo "Accepting Android SDK licenses..."
-        yes | sdkmanager --licenses || true
-        
-        # Install required packages
-        sdkmanager "platform-tools" "build-tools;33.0.0" "platforms;android-33" "ndk;25.2.9519653" || true
-        
-        # Create licenses directory
-        mkdir -p $ANDROID_SDK_ROOT/licenses
-        echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-        echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-        echo "84831b9409646a918e30573bab4c9c91346d8abd" > $ANDROID_SDK_ROOT/licenses/android-sdk-preview-license
-        
-        echo "SDK setup completed"
-        echo "SDK location: $ANDROID_SDK_ROOT"
-        ls -la $ANDROID_SDK_ROOT/tools/bin/ || true
+    - name: Verify buildozer installation
+      run: |
+        buildozer --version
+        buildozer android check
         
     - name: Build APK
-      timeout-minutes: 180
+      timeout-minutes: 120
       run: |
         echo "=== Starting Build ==="
-        
-        # Set environment
-        export ANDROID_SDK_ROOT=~/.buildozer/android/platform/android-sdk
-        export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools
-        
-        # Debug: Check SDK setup
-        echo "Checking SDK setup..."
-        ls -la ~/.buildozer/android/platform/android-sdk/ || true
-        ls -la ~/.buildozer/android/platform/android-sdk/tools/bin/ || true
-        
-        # Run buildozer
-        buildozer android debug 2>&1 | tee build.log || true
-        
+        buildozer android debug 2>&1 | tee build.log
         echo "=== Build completed ==="
         echo "=== Check bin/ directory ==="
         ls -la bin/ 2>/dev/null || echo "bin/ not found"
         echo "=== Check .buildozer/ directory ==="
         find .buildozer -name "*.apk" -type f 2>/dev/null | head -20 || echo "No APK in .buildozer"
+        echo "=== Check all APK files ==="
+        find . -name "*.apk" -type f 2>/dev/null || echo "No APK found anywhere"
       env:
         BUILDOZER_WARN_ON_ROOT: 0
+        JAVA_HOME: /usr/lib/jvm/temurin-17-jdk-amd64
+        ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
         
     - name: Find and copy APK
       run: |
         echo "=== Searching for APK ==="
-        APK_PATH=$(find . -name "*.apk" -type f 2>/dev/null | head -1)
+        APK_PATH=$(find .buildozer -name "*.apk" -type f 2>/dev/null | head -1)
         if [ -n "$APK_PATH" ]; then
           echo "Found APK: $APK_PATH"
           mkdir -p bin
           cp "$APK_PATH" bin/
           ls -la bin/
+          echo "APK_SIZE=$(stat -c%s "$APK_PATH")" >> $GITHUB_ENV
         else
-          echo "No APK found"
-          echo "=== Build log tail ==="
-          tail -100 build.log
+          echo "No APK found in .buildozer"
+          find . -name "*.apk" -type f 2>/dev/null
           exit 1
         fi
         
@@ -140,9 +111,36 @@ jobs:
         if-no-files-found: ignore
         
     - name: Upload APK
-      if: success()
       uses: actions/upload-artifact@v4
       with:
-        name: surgery-cam-apk-v1.2.0
+        name: surgery-cam-apk-v1.3.0
         path: bin/*.apk
         if-no-files-found: error
+        
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v1.3.0-${{ github.run_number }}
+        name: SurgeryCam v1.3.0 Build ${{ github.run_number }}
+        body: |
+          ## SurgeryCam Android App v1.3.0
+          
+          ### Changes
+          - Added ffpyplayer support for video playback
+          - Added FFmpeg dependencies
+          - Improved error handling and logging
+          - Fixed build configuration
+          
+          ### Build Info
+          - Build Date: ${{ github.event.head_commit.timestamp }}
+          - Commit: ${{ github.sha }}
+          
+          ### Requirements
+          - Android 5.0+ (API 21+)
+          - ARM64 device
+        files: bin/*.apk
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
