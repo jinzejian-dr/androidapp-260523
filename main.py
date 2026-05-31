@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 术野摄像头接收端 - 简化版 Android App
-版本: 1.2.0
+版本: 1.1.4
 日期: 2026-05-31
 功能: 设备发现、RTSP地址管理、视频播放
 说明: 使用 ffpyplayer 进行视频播放
@@ -163,7 +163,7 @@ class MainLayout(BoxLayout):
         """创建用户界面"""
         # 标题
         title = Label(
-            text=f'SurgeryCam v1.2.0 (External Player)',
+            text=f'SurgeryCam v1.3.0 (ffpyplayer: {"OK" if FFPYPLAYER_AVAILABLE else "N/A"})',
             size_hint_y=None,
             height=30,
             font_size='14sp'
@@ -443,5 +443,5 @@ class SimpleSurgeryCamApp(App):
 
 
 if __name__ == '__main__':
-    logger.info("Starting SurgeryCam App v1.2.0")
+    logger.info("Starting SurgeryCam App v1.3.0")
     SimpleSurgeryCamApp().run()
