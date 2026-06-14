@@ -51,27 +51,29 @@ jobs:
     
     - name: Setup Android SDK
       run: |
-        mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
-        cd ~/.buildozer/android/platform/android-sdk/cmdline-tools
+        # Use system Android SDK
+        export ANDROID_SDK=/usr/local/lib/android/sdk
+        export ANDROID_HOME=/usr/local/lib/android/sdk
         
-        wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-        unzip -q commandlinetools-linux-11076708_latest.zip
-        mv cmdline-tools latest
+        # Accept licenses
+        yes | $ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
-        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-        ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-        ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
+        # Install required packages
+        $ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
         
-        yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
+        # Create buildozer directory structure
+        mkdir -p ~/.buildozer/android/platform/
+        ln -sf $ANDROID_SDK ~/.buildozer/android/platform/android-sdk
     
     - name: Build APK
       run: |
-        export ANDROID_SDK=~/.buildozer/android/platform/android-sdk
+        export ANDROID_SDK=/usr/local/lib/android/sdk
+        export ANDROID_HOME=/usr/local/lib/android/sdk
         buildozer android debug
       timeout-minutes: 60
       env:
-        ANDROID_SDK: ~/.buildozer/android/platform/android-sdk
+        ANDROID_SDK: /usr/local/lib/android/sdk
+        ANDROID_HOME: /usr/local/lib/android/sdk
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
