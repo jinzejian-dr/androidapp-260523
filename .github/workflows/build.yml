@@ -49,31 +49,44 @@ jobs:
         python -m pip install --upgrade pip
         pip install buildozer cython
     
-    - name: Setup Android SDK
+    - name: Setup Android SDK for buildozer
       run: |
-        # Use system Android SDK
-        export ANDROID_SDK=/usr/local/lib/android/sdk
-        export ANDROID_HOME=/usr/local/lib/android/sdk
+        # Create buildozer directory structure
+        mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
+        
+        # Copy system SDK to buildozer location
+        cp -r /usr/local/lib/android/sdk/cmdline-tools/latest ~/.buildozer/android/platform/android-sdk/cmdline-tools/
+        
+        # Create tools/bin directory structure that buildozer expects
+        mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+        
+        # Create sdkmanager wrapper
+        cat > ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager << 'EOF'
+#!/bin/bash
+exec /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "$@"
+EOF
+        chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+        
+        # Create avdmanager wrapper
+        cat > ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager << 'EOF'
+#!/bin/bash
+exec /usr/local/lib/android/sdk/cmdline-tools/latest/bin/avdmanager "$@"
+EOF
+        chmod +x ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
         
         # Accept licenses
-        yes | $ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
         
         # Install required packages
-        $ANDROID_SDK/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
+        /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
         
-        # Create buildozer directory structure
-        mkdir -p ~/.buildozer/android/platform/
-        ln -sf $ANDROID_SDK ~/.buildozer/android/platform/android-sdk
+        # Verify setup
+        ls -la ~/.buildozer/android/platform/android-sdk/tools/bin/
     
     - name: Build APK
       run: |
-        export ANDROID_SDK=/usr/local/lib/android/sdk
-        export ANDROID_HOME=/usr/local/lib/android/sdk
         buildozer android debug
       timeout-minutes: 60
-      env:
-        ANDROID_SDK: /usr/local/lib/android/sdk
-        ANDROID_HOME: /usr/local/lib/android/sdk
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
