@@ -35,9 +35,6 @@ jobs:
           libavformat-dev \
           libavcodec-dev \
           zlib1g-dev \
-          libgstreamer1.0 \
-          gstreamer1.0-plugins-base \
-          gstreamer1.0-plugins-good \
           libffi-dev \
           libssl-dev \
           autoconf \
@@ -57,20 +54,15 @@ jobs:
         mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
         cd ~/.buildozer/android/platform/android-sdk/cmdline-tools
         
-        # Download command line tools
         wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
         unzip -q commandlinetools-linux-11076708_latest.zip
         mv cmdline-tools latest
         
-        # Create symlinks for buildozer
         mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
         ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
         ln -sf ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager
         
-        # Accept licenses
         yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        
-        # Install required packages
         ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
     
     - name: Build APK
@@ -87,13 +79,3 @@ jobs:
         name: surgerycam-v1.4.0-apk
         path: bin/*.apk
         if-no-files-found: warn
-    
-    - name: Debug on failure
-      if: failure()
-      run: |
-        echo "=== Buildozer directory ==="
-        ls -la ~/.buildozer/android/platform/ 2>/dev/null || echo "Not found"
-        echo "=== SDK directory ==="
-        ls -la ~/.buildozer/android/platform/android-sdk/ 2>/dev/null || echo "Not found"
-        echo "=== Build tools ==="
-        ls -la ~/.buildozer/android/platform/android-sdk/build-tools/ 2>/dev/null || echo "Not found"
