@@ -1,0 +1,72 @@
+﻿2026-06-14T18:35:53.7440903Z ##[group]Run actions/checkout@v4
+2026-06-14T18:35:53.7441741Z with:
+2026-06-14T18:35:53.7442211Z   repository: jinzejian-dr/androidapp-260523
+2026-06-14T18:35:53.7447261Z   token: ***
+2026-06-14T18:35:53.7447702Z   ssh-strict: true
+2026-06-14T18:35:53.7448145Z   ssh-user: git
+2026-06-14T18:35:53.7448598Z   persist-credentials: true
+2026-06-14T18:35:53.7449076Z   clean: true
+2026-06-14T18:35:53.7449516Z   sparse-checkout-cone-mode: true
+2026-06-14T18:35:53.7450024Z   fetch-depth: 1
+2026-06-14T18:35:53.7450446Z   fetch-tags: false
+2026-06-14T18:35:53.7450890Z   show-progress: true
+2026-06-14T18:35:53.7451330Z   lfs: false
+2026-06-14T18:35:53.7451734Z   submodules: false
+2026-06-14T18:35:53.7452171Z   set-safe-directory: true
+2026-06-14T18:35:53.7452842Z ##[endgroup]
+2026-06-14T18:35:53.8617766Z Syncing repository: jinzejian-dr/androidapp-260523
+2026-06-14T18:35:53.8620962Z ##[group]Getting Git version info
+2026-06-14T18:35:53.8622296Z Working directory is '/home/runner/work/androidapp-260523/androidapp-260523'
+2026-06-14T18:35:53.8624203Z [command]/usr/bin/git version
+2026-06-14T18:35:53.8678501Z git version 2.54.0
+2026-06-14T18:35:53.8704375Z ##[endgroup]
+2026-06-14T18:35:53.8720863Z Temporarily overriding HOME='/home/runner/work/_temp/7389db34-2dac-4237-9219-fdc4018828e3' before making global git config changes
+2026-06-14T18:35:53.8723133Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-14T18:35:53.8736241Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/androidapp-260523/androidapp-260523
+2026-06-14T18:35:53.8785954Z Deleting the contents of '/home/runner/work/androidapp-260523/androidapp-260523'
+2026-06-14T18:35:53.8790557Z ##[group]Initializing the repository
+2026-06-14T18:35:53.8796732Z [command]/usr/bin/git init /home/runner/work/androidapp-260523/androidapp-260523
+2026-06-14T18:35:53.8888197Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-14T18:35:53.8889794Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-14T18:35:53.8891058Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-14T18:35:53.8891809Z hint: call:
+2026-06-14T18:35:53.8892214Z hint:
+2026-06-14T18:35:53.8892721Z hint: 	git config --global init.defaultBranch <name>
+2026-06-14T18:35:53.8893330Z hint:
+2026-06-14T18:35:53.8893893Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-14T18:35:53.8894797Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-14T18:35:53.8895528Z hint:
+2026-06-14T18:35:53.8896302Z hint: 	git branch -m <name>
+2026-06-14T18:35:53.8897038Z hint:
+2026-06-14T18:35:53.8897669Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-14T18:35:53.8902518Z Initialized empty Git repository in /home/runner/work/androidapp-260523/androidapp-260523/.git/
+2026-06-14T18:35:53.8914401Z [command]/usr/bin/git remote add origin https://github.com/jinzejian-dr/androidapp-260523
+2026-06-14T18:35:53.8955560Z ##[endgroup]
+2026-06-14T18:35:53.8956757Z ##[group]Disabling automatic garbage collection
+2026-06-14T18:35:53.8959838Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-14T18:35:53.8989550Z ##[endgroup]
+2026-06-14T18:35:53.8990311Z ##[group]Setting up auth
+2026-06-14T18:35:53.8996440Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-14T18:35:53.9029285Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-14T18:35:53.9378955Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-14T18:35:53.9415669Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-14T18:35:53.9671874Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-14T18:35:53.9715661Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-14T18:35:53.9962101Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-14T18:35:54.0000832Z ##[endgroup]
+2026-06-14T18:35:54.0002112Z ##[group]Fetching the repository
+2026-06-14T18:35:54.0010163Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +77be6d14f45e069fc6c3972279fde52e513e102b:refs/remotes/origin/v1.4
+2026-06-14T18:35:54.2056606Z From https://github.com/jinzejian-dr/androidapp-260523
+2026-06-14T18:35:54.2058686Z  * [new ref]         77be6d14f45e069fc6c3972279fde52e513e102b -> origin/v1.4
+2026-06-14T18:35:54.2095567Z ##[endgroup]
+2026-06-14T18:35:54.2097434Z ##[group]Determining the checkout info
+2026-06-14T18:35:54.2099153Z ##[endgroup]
+2026-06-14T18:35:54.2104800Z [command]/usr/bin/git sparse-checkout disable
+2026-06-14T18:35:54.2152260Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-14T18:35:54.2182441Z ##[group]Checking out the ref
+2026-06-14T18:35:54.2187486Z [command]/usr/bin/git checkout --progress --force -B v1.4 refs/remotes/origin/v1.4
+2026-06-14T18:35:54.2240143Z Switched to a new branch 'v1.4'
+2026-06-14T18:35:54.2242142Z branch 'v1.4' set up to track 'origin/v1.4'.
+2026-06-14T18:35:54.2250757Z ##[endgroup]
+2026-06-14T18:35:54.2293549Z [command]/usr/bin/git log -1 --format=%H
+2026-06-14T18:35:54.2318664Z 77be6d14f45e069fc6c3972279fde52e513e102b

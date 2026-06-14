@@ -1,0 +1,17 @@
+﻿2026-06-14T18:39:35.4293225Z ##[group]Run echo "=== Searching for APK ==="
+2026-06-14T18:39:35.4293604Z [36;1mecho "=== Searching for APK ==="[0m
+2026-06-14T18:39:35.4293977Z [36;1mfind . -name "*.apk" -type f 2>/dev/null || echo "No APK found"[0m
+2026-06-14T18:39:35.4294342Z [36;1mecho "=== Build log tail ==="[0m
+2026-06-14T18:39:35.4294825Z [36;1mtail -100 ~/.buildozer/android/platform/build-*/build.log 2>/dev/null || echo "No build log found"[0m
+2026-06-14T18:39:35.4329997Z shell: /usr/bin/bash -e {0}
+2026-06-14T18:39:35.4330257Z env:
+2026-06-14T18:39:35.4330529Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:39:35.4330962Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+2026-06-14T18:39:35.4331374Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:39:35.4331748Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:39:35.4332115Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:39:35.4332486Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+2026-06-14T18:39:35.4332850Z ##[endgroup]
+2026-06-14T18:39:35.4388659Z === Searching for APK ===
+2026-06-14T18:39:35.5430783Z === Build log tail ===
+2026-06-14T18:39:35.5445157Z No build log found

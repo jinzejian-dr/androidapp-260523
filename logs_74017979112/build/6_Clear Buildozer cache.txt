@@ -1,0 +1,12 @@
+﻿2026-06-14T18:36:09.2066224Z ##[group]Run rm -rf ~/.buildozer/android/platform/android-sdk
+2026-06-14T18:36:09.2066721Z [36;1mrm -rf ~/.buildozer/android/platform/android-sdk[0m
+2026-06-14T18:36:09.2067055Z [36;1mrm -rf .buildozer[0m
+2026-06-14T18:36:09.2102205Z shell: /usr/bin/bash -e {0}
+2026-06-14T18:36:09.2102475Z env:
+2026-06-14T18:36:09.2102743Z   pythonLocation: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:36:09.2103199Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib/pkgconfig
+2026-06-14T18:36:09.2103625Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:36:09.2104011Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:36:09.2104399Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.10.20/x64
+2026-06-14T18:36:09.2104771Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.10.20/x64/lib
+2026-06-14T18:36:09.2105094Z ##[endgroup]
